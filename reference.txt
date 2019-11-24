@@ -1,1 +1,108 @@
 node server.js logs.json 4001 4002 4003
+
+import React from 'react';
+import { Component } from "react";
+import './App.css';
+
+//function App() {
+    class App extends Component {
+        constructor(props) {
+            super(props);
+            this.state = { data: [] };
+
+            this.onSort = this.onSort.bind(this)
+
+            this.onFind = this.onFind.bind(this)
+        }
+
+        componentDidMount() {
+            fetch("http://localhost:4002/log")
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(items => this.setState({ data: items }));
+        }
+
+        onFind(){
+            console.log(this.refs.logval.value);
+            //http://localhost:12345/log?startTime=2015-08-28T10:
+            // 00:00Z&endTime=2015-08-28T11:00:00Z&cat=OSPF&prio=3&num=40
+            let url ="http://localhost:4002/log";
+            //2015-08-28T10:59:53Z
+            fetch(url+"?startTime=2015-08-28T10:\n" +
+                "00:00Z&endTime=2015-08-28T11:00:00Z&cat=OSPF&prio=3&num=20")
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(items => this.setState({ data: items }));
+        }
+        onSort(event, sortKey){
+            /*
+            assuming your data is something like
+            [
+              {accountname:'foo', negotiatedcontractvalue:'bar'},
+              {accountname:'monkey', negotiatedcontractvalue:'spank'},
+              {accountname:'chicken', negotiatedcontractvalue:'dance'},
+            ]
+            */
+            const data = this.state.data;
+            data.sort((a ,b) => a[sortKey].localeCompare(b[sortKey]))
+            this.setState({data})
+        }
+
+        render() {
+            var newdata = this.state.data;
+            console.log(newdata);
+            return (
+                <div>
+                    <select ref="logval">
+                        {newdata.map(function(log, index) {
+                       return <option  key={index} value={log.time}>{log.time}</option>
+                        })}
+                    </select>
+
+               <button>
+                   find
+               </button>
+                <table className="m-table">
+                <thead>
+                <tr>
+                    <th  onClick={e => this.onSort(e, 'time')}>Date</th>
+                    <th  onClick={e => this.onSort(e, 'ip')} >IP</th>
+                    <th  onClick={e => this.onSort(e, 'prio')}>Severity</th>
+                    <th  onClick={e => this.onSort(e, 'cat')}>Category</th>
+                    <th  onClick={e => this.onSort(e, 'event')}>Event</th>
+                    <th  onClick={e => this.onSort(e, 'action')}>Action</th>
+                    <th >Message  <button onClick={e => this.onFind(e, 'time')}>
+                        find
+                    </button></th>
+                </tr>
+                </thead>
+                <tbody>
+                {newdata.map(function(log, index) {
+                    return (
+                        <tr key={index} data-item={log}>
+                            <td data-title="time">{log.time}</td>
+                            <td data-title="ip">{log.ip}</td>
+                            <td data-title="priority">{log.prio}</td>
+                            <td data-title="category">{log.cat}</td>
+                            <td data-title="event">{log.event}</td>
+                            <td data-title="action">{log.action}</td>
+                            <td data-title="message">{log.message}</td>
+                        </tr>
+                    );
+                })}
+                </tbody>
+            </table></div>)
+                ;
+        }
+}
+
+
+ {newdata.map(function(log, index) {
+                                    return  <select ref="logval">
+                                    <option  key={index} value={log.time}>{log.time}</option>
+                                    </select>
+                                })}
+
+export default App;
