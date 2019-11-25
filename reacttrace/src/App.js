@@ -79,7 +79,7 @@ class App extends Component {
                     mainUrl = url + "?startTime=" + n + "&endTime=" + endtime + val;
                 }
                 else{
-                    alert("valid start& end time ,severity,pagination values and category as mandatory");
+                    alert("valid start& end time ,severity,pagination entries values and category as mandatory");
                 }
             }
             else{
@@ -95,7 +95,7 @@ class App extends Component {
         }
         else{
             this.refs.logserver.value ='4001';
-            alert("choose logs server, valid start and end time, severity and category as mandatory");
+            alert("choose logs sources server, valid start and end time, pagination entries severity and category as mandatory");
         }
     }
 
@@ -136,9 +136,9 @@ class App extends Component {
                             <DateTimePicker
                                 onChange={this.onChange}
                                 value={this.state.date}
-                            />
+                            /><span>to</span>
                         </div>
-                        <div className='childItems'>to
+                        <div className='childItems'>
 
                             <DateTimePicker
                                 onChange={this.onChangeEd}
