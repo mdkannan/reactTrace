@@ -13,12 +13,11 @@ import 'react-datepicker/dist/react-datepicker.css';
 
 import './App.css';
 
-//function App() {
 class App extends Component {
 
     constructor(props) {
         super(props);
-        let date = `2015-06-26`;
+        /********Added the properties for grid table for showing the response and headers are showing**************************/
         this.state = {
             columnDefs: [
                 {headerName: "Date", field: "time"},
@@ -29,10 +28,8 @@ class App extends Component {
                 {headerName: "Action", field: "action"},
                 {headerName: "Message", field: "message"},
             ],
-
             paginationPageSize:100,
             rowData: [],
-            allLog:[],
             startDate: moment(),
             endDate:moment(),
             date: new Date(),
@@ -54,23 +51,24 @@ class App extends Component {
         })
     }
 
+    /**********using finding the data based on the key enter after filled the start and end, cat and severity*********************************/
     enterPressed(event) {
         let code = event.keyCode || event.which;
-        if(code === 13) { //13 is the enter keycode
-            //Do stuff in here
+        if(code === 13) {
             this.onFind()
         }
     }
 
+    /***Using React Fetch method to fetch log response based on the selected time severity and category for handling the service call to find data.**************************************/
     onFind(){
         let url, val,mainUrl;
-        // console.log(this.refs.starttime.value);
-        let st = this.state.date;  //2019-11-24T19:09:57.415Z
-        let n = st.toISOString(); //2015-08-28T10:00:00Z //2015-08-28T10:00:00.000Z
+        let st = this.state.date;
+        let n = st.toISOString(); //2015-08-28T10:00:00Z
 
         let et = this.state.endDatePic;
         let endtime = et.toISOString();
         this.setState({paginationPageSie:this.refs.pagezination.value});
+        /****handling the error validations for if not selected the start and endtime log sources,page entries, severity and category*******************/
         if(this.refs.logserver.value == '4001' || this.refs.logserver.value == '4002' || this.refs.logserver.value == '4003'){
             if(this.refs.logserver.value !== '' && this.refs.cat.value != '' && this.refs.severity.value != '') {
                 if(this.refs.cat.value != 'clog' && this.refs.severity.value != 'ser' && this.refs.pagezination.value !=''){
@@ -100,7 +98,7 @@ class App extends Component {
     }
 
     componentDidMount() {
-
+/******react life cycle used here to do the service for page loading*********************************/
         fetch("http://localhost:4003/log")
             .then(function(response) {
                 return response.json();
@@ -211,4 +209,5 @@ class App extends Component {
     }
 }
 
+/*****class based component to use as single component to manage data handling and html rendering with in  it********/
 export default App;
