@@ -51,7 +51,8 @@ class App extends Component {
         })
     }
 
-    /**********using finding the data based on the key enter after filled the start and end, cat and severity*********************************/
+    /**********using finding the data based on the key enter after filled the start and end, cat and severity*******
+     * **************************/
     enterPressed(event) {
         let code = event.keyCode || event.which;
         if(code === 13) {
@@ -59,9 +60,15 @@ class App extends Component {
         }
     }
 
-    /***Using React Fetch method to fetch log response based on the selected time severity and category for handling the service call to find data.**************************************/
+    /***Using React Fetch method to fetch log response based on the selected time severity and category for
+     * handling the service call to find data.
+     * in log sources selected list:
+     if you are choosing 4001 which fetch data from 4002 server
+     if you are choosing 4002 which fetch data from 4002 and 4001 servers
+     if you are choosing 4003 which fetches data from 4003,4002 and 4001 servers
+     **************************************/
     onFind(){
-        let url, val,mainUrl;
+        let url, val,mainUrl,mainurl2,mainurl3 ;
         let st = this.state.date;
         let n = st.toISOString(); //2015-08-28T10:00:00Z
 
@@ -72,9 +79,37 @@ class App extends Component {
         if(this.refs.logserver.value == '4001' || this.refs.logserver.value == '4002' || this.refs.logserver.value == '4003'){
             if(this.refs.logserver.value !== '' && this.refs.cat.value != '' && this.refs.severity.value != '') {
                 if(this.refs.cat.value != 'clog' && this.refs.severity.value != 'ser' && this.refs.pagezination.value !=''){
-                    url = "http://localhost:" + this.refs.logserver.value + "/log";
                     val = "&cat=" + this.refs.cat.value + "&prio=" + this.refs.severity.value + "&num="+this.refs.pagezination.value;
+                    url = "http://localhost:" + 4001 + "/log";
+                    let url2 = "http://localhost:" + 4002+ "/log";
+                    let url3 = "http://localhost:" + 4003+ "/log";
                     mainUrl = url + "?startTime=" + n + "&endTime=" + endtime + val;
+                    mainurl2 = url2 + "?startTime=" + n + "&endTime=" + endtime + val;
+                    mainurl3 = url3 + "?startTime=" + n + "&endTime=" + endtime + val;
+
+                    if(this.refs.logserver.value == '4001'){
+                        url = "http://localhost:" + this.refs.logserver.value + "/log";
+                        mainUrl = url + "?startTime=" + n + "&endTime=" + endtime + val;
+                        fetch(mainUrl)
+                            .then(function(response) {
+                                return response.json();
+                            })
+                            .then(items => this.setState({ rowData: items }));
+
+                    }
+                    else if(this.refs.logserver.value == '4002'){
+
+                        Promise.all([this.Servers(mainUrl),this.Servers(mainurl2)]).then((values)=>{
+                            this.setState({rowData:values[0].concat(values[1]) });
+                        })
+                    }
+                    else if (this.refs.logserver.value == '4003'){
+
+                        Promise.all([this.Servers(mainUrl),this.Servers(mainurl2),this.Servers(mainurl3)]).then((values)=>{
+                            this.setState({rowData:values[0].concat(values[1],values[2]) });
+                        })
+                    }
+
                 }
                 else{
                     alert("valid start& end time ,severity,pagination entries values and category as mandatory");
@@ -83,13 +118,8 @@ class App extends Component {
             else{
                 alert(" severity and category as mandatory");
             }
-            fetch(mainUrl)
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(items => this.setState({ rowData: items }));
-            console.log('first'+this.state.rowData)
 
+            console.log('first'+this.state.rowData)
         }
         else{
             this.refs.logserver.value ='4001';
@@ -97,6 +127,14 @@ class App extends Component {
         }
     }
 
+     Servers = (url)=>new Promise(async(resolve, reject) =>{
+        let a = await fetch(url);
+        if(a){
+            resolve(a.json());
+        }else {
+            reject(a)
+        }
+    });
     componentDidMount() {
 /******react life cycle used here to do the service for page loading*********************************/
         fetch("http://localhost:4003/log")
@@ -108,6 +146,10 @@ class App extends Component {
 
     render() {
         let newdata = this.state.rowData;
+        console.log(newdata)
+        newdata = newdata.filter(function( element ) {
+            return element !== undefined;
+        });
         return (
             <div className='wrapper'>
                 <div>
@@ -147,7 +189,10 @@ class App extends Component {
                             <select ref="severity">
                                 <option value="ser">Log Severity</option>
                                 {newdata.map(function(log, index) {
-                                    return <option  key={index} value={log.prio}>{log.prio}</option>
+                                    if(log.prio != undefined){
+                                        return <option  key={index} value={log.prio}>{log.prio}</option>
+                                    }
+
                                 })}
                             </select></div>
                         <div className='childItems'>
