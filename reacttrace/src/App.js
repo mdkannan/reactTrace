@@ -29,7 +29,8 @@ class App extends Component {
                 {headerName: "Action", field: "action"},
                 {headerName: "Message", field: "message"},
             ],
-            paginationPageSize:50,
+
+            paginationPageSize:100,
             rowData: [],
             allLog:[],
             startDate: moment(),
@@ -39,9 +40,7 @@ class App extends Component {
         }
 
         this.onFind = this.onFind.bind(this)
-      //  this.onChange = this.onChange.bind(this)
-     //   this.handleChange = this.handleChange.bind(this);
-    //    this.handleSubmit = this.handleSubmit.bind(this);
+        this.enterPressed = this.enterPressed.bind(this)
     }
 
     onChange = date => this.setState({ date })
@@ -55,6 +54,13 @@ class App extends Component {
         })
     }
 
+    enterPressed(event) {
+        let code = event.keyCode || event.which;
+        if(code === 13) { //13 is the enter keycode
+            //Do stuff in here
+            this.onFind()
+        }
+    }
 
     onFind(){
         let url, val,mainUrl;
@@ -67,38 +73,31 @@ class App extends Component {
         this.setState({paginationPageSie:this.refs.pagezination.value});
         if(this.refs.logserver.value == '4001' || this.refs.logserver.value == '4002' || this.refs.logserver.value == '4003'){
             if(this.refs.logserver.value !== '' && this.refs.cat.value != '' && this.refs.severity.value != '') {
-                if(this.refs.cat.value != 'clog' && this.refs.severity.value != 'ser'){
+                if(this.refs.cat.value != 'clog' && this.refs.severity.value != 'ser' && this.refs.pagezination.value !=''){
                     url = "http://localhost:" + this.refs.logserver.value + "/log";
-                    val = "&cat=" + this.refs.cat.value + "&prio=" + this.refs.severity.value + "&num=20";
+                    val = "&cat=" + this.refs.cat.value + "&prio=" + this.refs.severity.value + "&num="+this.refs.pagezination.value;
                     mainUrl = url + "?startTime=" + n + "&endTime=" + endtime + val;
                 }
+                else{
+                    alert("valid start& end time ,severity,pagination values and category as mandatory");
+                }
             }
-        }
-        let url2 ="http://localhost:4002/log";
-        let url3 ="http://localhost:4003/log";
-        let fullUrl=url+val;
-        fetch(mainUrl)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(items => this.setState({ rowData: items }));
-        console.log('first'+this.state.rowData)
-        //let mainUrl2=url2+"?startTime="+n+"&endTime="+endtime+val;
-        fetch(mainUrl)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(items => this.setState({ rowData: items }));
-        console.log('second'+this.state.rowData)
-       // let mainUrl3=url3+"?startTime="+n+"&endTime="+endtime+val;
-        fetch(mainUrl)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(items => this.setState({ rowData: items }));
-        console.log('third'+this.state.rowData)
-    }
+            else{
+                alert(" severity and category as mandatory");
+            }
+            fetch(mainUrl)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(items => this.setState({ rowData: items }));
+            console.log('first'+this.state.rowData)
 
+        }
+        else{
+            this.refs.logserver.value ='4001';
+            alert("choose logs server, valid start and end time, severity and category as mandatory");
+        }
+    }
 
     componentDidMount() {
 
@@ -111,19 +110,18 @@ class App extends Component {
 
     render() {
         let newdata = this.state.rowData;
-        console.log(newdata)
         return (
             <div className='wrapper'>
                 <div>
                     <div className='parent'>
-                        <div className='childItems'>
+
                             <select ref="logserver">
                                 <option value="">Log Sources</option>
                                 <option value="4001">Server 4001</option>
                                 <option value="4002">Server 4002</option>
                                 <option value="4003">Server 4003</option>
                             </select>
-                        </div>
+
 
                         <select ref="pagezination">
                             <option value="">Entries Per Page</option>
@@ -185,7 +183,10 @@ class App extends Component {
                                 })}
                             </select></div>
                         <div className='childItems'>
-                            <button onClick={e => this.onFind(e, 'time')}>
+                            <button
+                                onClick={e => this.onFind(e, 'time')}
+                                onKeyPress={this.enterPressed.bind(this)}
+                            >
                             find
                         </button>
                         </div>
@@ -200,6 +201,7 @@ class App extends Component {
                         enableFilter={true}
                         pagination={true}
                         columnDefs={this.state.columnDefs}
+
                     paginationPageSize={this.state.paginationPageSize}
                         rowData={this.state.rowData}>
                     </AgGridReact>
